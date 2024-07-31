@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simpli Paint</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to right, #ffecd2, #fcb69f);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #toolbar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #ffffffdd;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button, select, input[type=color] {
+      margin: 0 10px;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #fff;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    select, input[type=color] {
+      background-color: #fff;
+      color: #000;
+      border: 2px solid #000;
+    }
+
+    canvas {
+      border: 4px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button id="refresh">Refresh</button>
+    <input type="color" id="colorPicker" value="#0000ff">
+    <button id="eraser">Eraser</button>
+  </div>
+  <canvas id="magicCanvas" width="800" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById('magicCanvas');
+    const context = canvas.getContext('2d');
+    const refreshButton = document.getElementById('refresh');
+    const colorPicker = document.getElementById('colorPicker');
+    const eraserButton = document.getElementById('eraser');
+
+    let painting = false;
+    let erasing = false;
+    let currentColor = colorPicker.value;
+
+    canvas.width = window.innerWidth * 0.9;
+    canvas.height = window.innerHeight * 0.6;
+
+    function startPosition(e) {
+      painting = true;
+      draw(e);
+    }
+
+    function endPosition() {
+      painting = false;
+      context.beginPath();
+    }
+
+    function draw(e) {
+      if (!painting) return;
+
+      context.lineWidth = 5;
+      context.lineCap = 'round';
+      context.strokeStyle = erasing ? '#ffffff' : currentColor;
+
+      let x, y;
+      if (e.touches) {
+        e.preventDefault();
+        x = e.touches[0].clientX - canvas.offsetLeft;
+        y = e.touches[0].clientY - canvas.offsetTop;
+      } else {
+        x = e.clientX - canvas.offsetLeft;
+        y = e.clientY - canvas.offsetTop;
+      }
+
+      context.lineTo(x, y);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(x, y);
+    }
+
+    function refreshCanvas() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = 'white';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function changeColor() {
+      currentColor = this.value;
+      erasing = false;
+    }
+
+    function activateEraser() {
+      erasing = true;
+    }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    refreshButton.addEventListener('click', refreshCanvas);
+    colorPicker.addEventListener('input', changeColor);
+    eraserButton.addEventListener('click', activateEraser);
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth * 0.9;
+      canvas.height = window.innerHeight * 0.6;
+      refreshCanvas();
+    });
+
+    // Initialize canvas background color to white
+    refreshCanvas();
+  </script>
+</body>
+</html>
